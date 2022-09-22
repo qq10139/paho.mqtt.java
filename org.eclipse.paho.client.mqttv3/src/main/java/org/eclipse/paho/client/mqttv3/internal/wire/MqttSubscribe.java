@@ -15,14 +15,10 @@
  */
 package org.eclipse.paho.client.mqttv3.internal.wire;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import java.io.*;
 
 /**
  * An on-the-wire representation of an MQTT SUBSCRIBE message.
@@ -116,6 +112,7 @@ public class MqttSubscribe extends MqttWireMessage {
 	}
 
 	protected byte getMessageInfo() {
+		//TODO 这里用重复标志的意义是什么,就写死成2香吗
 		return (byte) (2 | (duplicate ? 8 : 0));
 	}
 

@@ -82,16 +82,18 @@ public abstract class MqttWireMessage {
 	}
 
 	/**
+	 *
+	 * 固定报头的标志 Flags
 	 * Sub-classes should override this to encode the message info. Only the
 	 * least-significant four bits will be used.
-	 * 
+	 *
 	 * @return The Message information byte
 	 */
 	protected abstract byte getMessageInfo();
 
 	/**
 	 * Sub-classes should override this method to supply the payload bytes.
-	 * 
+	 *
 	 * @return The payload byte array
 	 * @throws MqttException
 	 *             if an exception occurs whilst getting the payload
@@ -101,6 +103,7 @@ public abstract class MqttWireMessage {
 	}
 
 	/**
+	 * 控制报文的类型
 	 * @return the type of the message.
 	 */
 	public byte getType() {
@@ -116,7 +119,7 @@ public abstract class MqttWireMessage {
 
 	/**
 	 * Sets the MQTT message ID.
-	 * 
+	 *
 	 * @param msgId
 	 *            the MQTT message ID
 	 */
@@ -128,7 +131,7 @@ public abstract class MqttWireMessage {
 	 * Returns a key associated with the message. For most message types this will
 	 * be unique. For connect, disconnect and ping only one message of this type is
 	 * allowed so a fixed key will be returned
-	 * 
+	 *
 	 * @return key a key associated with the message
 	 */
 	public String getKey() {
@@ -137,8 +140,11 @@ public abstract class MqttWireMessage {
 
 	public byte[] getHeader() throws MqttException {
 		try {
+			//固定头
 			int first = ((getType() & 0x0f) << 4) ^ (getMessageInfo() & 0x0f);
+			//可变头
 			byte[] varHeader = getVariableHeader();
+			//剩余长度
 			int remLen = varHeader.length + getPayload().length;
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -238,6 +244,11 @@ public abstract class MqttWireMessage {
 		}
 	}
 
+	/**
+	 * 剩余长度的编码算法
+	 * @param number 剩余长度
+	 * @return byte,变长
+	 */
 	public static byte[] encodeMBI(long number) {
 		validateVariableByteInt((int) number);
 		int numBytes = 0;
@@ -258,8 +269,9 @@ public abstract class MqttWireMessage {
 	}
 
 	/**
+	 * 剩余长度的解码方式
 	 * Decodes an MQTT Multi-Byte Integer from the given stream.
-	 * 
+	 *
 	 * @param in
 	 *            the input stream
 	 * @return {@link MultiByteInteger}
@@ -278,7 +290,7 @@ public abstract class MqttWireMessage {
 			msgLength += ((digit & 0x7F) * multiplier);
 			multiplier *= 128;
 		} while ((digit & 0x80) != 0);
-		
+
 		if (msgLength < 0 || msgLength > VARIABLE_BYTE_INT_MAX) {
 			throw new IOException("This property must be a number between 0 and " + VARIABLE_BYTE_INT_MAX
 					+ ". Read value was: " + msgLength);
@@ -314,7 +326,7 @@ public abstract class MqttWireMessage {
 	 * DataOutputStream. @link{DataOutputStream#writeUFT(String)} should be no
 	 * longer used. @link{DataOutputStream#writeUFT(String)} does not correctly
 	 * encode UTF-16 surrogate characters.
-	 * 
+	 *
 	 * @param dos
 	 *            The stream to write the encoded UTF-8 String to.
 	 * @param stringToEncode
@@ -346,7 +358,7 @@ public abstract class MqttWireMessage {
 	 * provided. @link(DataInoutStream#readUTF()) should be no longer used,
 	 * because @link(DataInoutStream#readUTF()) does not decode UTF-16 surrogate
 	 * characters correctly.
-	 * 
+	 *
 	 * @param input
 	 *            The input stream from which to read the encoded string
 	 * @return a decoded String from the DataInputStream
@@ -372,7 +384,7 @@ public abstract class MqttWireMessage {
 
 	/**
 	 * Validate a UTF-8 String for suitability for MQTT.
-	 * 
+	 *
 	 * @param input
 	 *            - The Input String
 	 * @throws IllegalArgumentException - thrown if input String contains illegal characters or character sequences.
